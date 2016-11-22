@@ -5,7 +5,7 @@
   function placeholder($someParam)
   {
     $client = new Client([
-      'base_uri' => 'http://archive-grbj.s3-website-us-east-1.amazonaws.com/',
+      'base_uri' => 'http://archive-grbj-2.s3-website-us-west-1.amazonaws.com/',
       'timeout'  => 5.0,
     ]);
 
