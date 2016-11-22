@@ -1,0 +1,6 @@
+{
+  "name": "GRBJ Archive Scraper",
+  "require": {
+    "guzzlehttp/guzzle": "~6.0"
+  }
+}
