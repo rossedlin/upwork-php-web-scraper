@@ -19,7 +19,8 @@ use Symfony\Component\CssSelector;
  */
 class Scraper
 {
-	private $data = [];
+	private $baseUrl = false;
+	private $data    = [];
 
 	/**
 	 * @param $author
@@ -57,10 +58,38 @@ class Scraper
 		 */
 		else
 		{
+			/**
+			 * Scrap the author URL
+			 */
+			$authorBio           = false;
+			$authorTwitterHandle = false;
+
+			$html = $this->getHtmlFromUrl($this->baseUrl, $authorUrl);
+
+			/**
+			 * Extract Bio
+			 */
+			$data = $this->extractHtml($html, '.author-bio .abstract');
+			if (isset($data[0]) && trim($data[0]) != '')
+			{
+				$authorBio = trim($data[0]);
+			}
+
+			/**
+			 * Extract Twitter Handle
+			 */
+			$data = $this->extractHtml($html, '.author-bio .abstract a');
+			if (isset($data[0]) && trim($data[0]) != '')
+			{
+				$authorTwitterHandle = trim($data[0]);
+			}
+
 			$this->data[$code] = [
-				'authorName'  => $author,
-				'authorCount' => 1,
-				'articles'    => [$article],
+				'authorName'          => $author,
+				'authorBio'           => $authorBio,
+				'authorTwitterHandle' => $authorTwitterHandle,
+				'authorCount'         => 1,
+				'articles'            => [$article],
 			];
 		}
 	}
@@ -132,17 +161,17 @@ class Scraper
 		return trim($str);
 	}
 
-	private function getHtmlFromUrl($url)
+	private function getHtmlFromUrl($baseUrl, $subUrl = '/')
 	{
 		$client = new Client([
-			'base_uri' => $url,
+			'base_uri' => $baseUrl,
 			'timeout'  => 5.0,
 		]);
 
 		/**
 		 * Request HTML
 		 */
-		$response = $client->request('GET', '/');
+		$response = $client->request('GET', $subUrl);
 		$body     = $response->getBody();
 		$html     = $body->getContents();
 
@@ -156,7 +185,8 @@ class Scraper
 	 */
 	public function scrap($baseUrl)
 	{
-		$html = $this->getHtmlFromUrl($baseUrl);
+		$this->baseUrl = $baseUrl;
+		$html          = $this->getHtmlFromUrl($baseUrl);
 
 		/**
 		 *
@@ -201,21 +231,17 @@ class Scraper
 				 * Extract Author URL
 				 */
 				$authorUrl = $this->extractHref($article, '.author > a');
-				if (strlen(trim($authorUrl)) > 1)
-				{
-					if (!self::startsWith($authorUrl, $baseUrl))
-					{
-						$authorUrl = $baseUrl . $authorUrl;
-					}
-				}
+//				if (strlen(trim($authorUrl)) > 1)
+//				{
+//					if (!self::startsWith($authorUrl, $baseUrl))
+//					{
+//						$authorUrl = $baseUrl . $authorUrl;
+//					}
+//				}
 
 				$this->addItem($author, $authorUrl, $title, $articleUrl);
+				break;
 			}
-
-
-//			$titles[] = $this->cleanTitle($title);
-
-//			break;
 		}
 
 //		pre($titles);
