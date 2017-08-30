@@ -38,10 +38,27 @@ class Scraper
 		pre($title);
 		pre($articleUrl);
 
+		/**
+		 * Scrap Article Directly
+		 */
+		$html = $this->getHtmlFromUrl($this->baseUrl, $articleUrl);
+//		pre($html);
+//		exit;
+
+		/**
+		 * Extract Article Date
+		 */
+		$articleDate = false;
+		$data        = $this->extractHtml($html, '.record .meta .date');
+		if (isset($data[0]) && trim($data[0]) != '')
+		{
+			$articleDate = trim($data[0]);
+		}
+
 		$article = [
 			'articleTitle' => $title,
 			'articleUrl'   => $articleUrl,
-			'articleDate'  => '2001-01-01',
+			'articleDate'  => $articleDate,
 		];
 
 		/**
@@ -233,13 +250,6 @@ class Scraper
 				 * Extract Article URL
 				 */
 				$articleUrl = $this->extractHref($article, '.headline > a');
-				if (strlen(trim($articleUrl)) > 1)
-				{
-					if (!self::startsWith($articleUrl, $baseUrl))
-					{
-						$articleUrl = $baseUrl . $articleUrl;
-					}
-				}
 
 				/**
 				 * Extract Author URL
