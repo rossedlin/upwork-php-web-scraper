@@ -23,21 +23,23 @@ class Scraper
 
 	/**
 	 * @param $author
+	 * @param $authorUrl
 	 * @param $title
-	 * @param $url
+	 * @param $articleUrl
 	 */
-	private function addItem($author, $title, $url)
+	private function addItem($author, $authorUrl, $title, $articleUrl)
 	{
 		$code = self::codify($author);
 
 		pre('<span style="color: #00ff00;">' . $code . '</span>');
 		pre('<span style="color: #ff0000;">' . $author . '</span>');
+		pre($authorUrl);
 		pre($title);
-		pre($url);
+		pre($articleUrl);
 
 		$article = [
 			'articleTitle' => $title,
-			'articleUrl'   => 'http://example.com',
+			'articleUrl'   => $articleUrl,
 			'articleDate'  => '2001-01-01',
 		];
 
@@ -101,7 +103,7 @@ class Scraper
 		try
 		{
 			$crawler = new Crawler($html);
-			$link    = $crawler->filter('a')->attr('href');
+			$link    = $crawler->filter($filter)->attr('href');
 			return $link;
 		}
 		catch (\Exception $e)
@@ -195,7 +197,19 @@ class Scraper
 					}
 				}
 
-				$this->addItem($author, $title, $articleUrl);
+				/**
+				 * Extract Author URL
+				 */
+				$authorUrl = $this->extractHref($article, '.author > a');
+				if (strlen(trim($authorUrl)) > 1)
+				{
+					if (!self::startsWith($authorUrl, $baseUrl))
+					{
+						$authorUrl = $baseUrl . $authorUrl;
+					}
+				}
+
+				$this->addItem($author, $authorUrl, $title, $articleUrl);
 			}
 
 
