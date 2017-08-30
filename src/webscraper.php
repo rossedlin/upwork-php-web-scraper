@@ -19,13 +19,33 @@ use Symfony\Component\CssSelector;
  */
 class Scraper
 {
+	private $data = [];
+
+	private function addItem($author, $title)
+	{
+//		if ($this->[$author])
+//
+//		$item =
+//			[
+//				'authorName' => $author,
+//				'articles'   => [
+//					[
+//						'articleUrl'  => 'http://example.com',
+//						'articleDate' => '2001-01-01',
+//					],
+//					[],
+//					[],
+//				],
+//			];
+	}
+
 	/**
 	 * @param $html
 	 * @param $filter
 	 *
 	 * @return array
 	 */
-	private static function filterHtml($html, $filter)
+	private function filterHtml($html, $filter)
 	{
 		$crawler  = new Crawler($html);
 		$articles = $crawler
@@ -43,7 +63,7 @@ class Scraper
 	 *
 	 * @return string
 	 */
-	private static function cleanAuthor($str)
+	private function cleanAuthor($str)
 	{
 		return trim($str);
 	}
@@ -53,7 +73,7 @@ class Scraper
 	 *
 	 * @return string
 	 */
-	private static function cleanTitle($str)
+	private function cleanTitle($str)
 	{
 		return $str;
 		return trim($str);
@@ -62,7 +82,7 @@ class Scraper
 	/**
 	 * @return mixed
 	 */
-	public static function test1()
+	public function test1()
 	{
 		$client = new Client([
 			'base_uri' => 'http://archive-grbj-2.s3-website-us-west-1.amazonaws.com/',
@@ -79,7 +99,7 @@ class Scraper
 		/**
 		 *
 		 */
-		$articles = self::filterHtml($html, '.record');
+		$articles = $this->filterHtml($html, '.record');
 
 		$titles = [];
 		foreach ($articles as $article)
@@ -88,10 +108,10 @@ class Scraper
 			 * Extract Author
 			 * Only take articles with an author
 			 */
-			$author = self::filterHtml($article, '.author > a');
+			$author = $this->filterHtml($article, '.author > a');
 			if (isset($author[0]))
 			{
-				$author = self::cleanAuthor($author[0]);
+				$author = $this->cleanAuthor($author[0]);
 				if ($author == '')
 				{
 					continue;
@@ -102,13 +122,14 @@ class Scraper
 				/**
 				 * Extract Title
 				 */
-				$title = self::filterHtml($article, '.headline > a');
+				$title = $this->filterHtml($article, '.headline > a');
 				pre($title);
+
+				$this->addItem($author, $title);
 			}
 
 
-
-//			$titles[] = self::cleanTitle($title);
+//			$titles[] = $this->cleanTitle($title);
 
 //			break;
 		}
@@ -170,4 +191,5 @@ function pre($var = false)
 }
 
 
-pre(Scraper::test1());
+$scraper = new Scraper();
+pre($scraper->test1());
