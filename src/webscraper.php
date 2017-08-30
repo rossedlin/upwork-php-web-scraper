@@ -32,18 +32,10 @@ class Scraper
 	{
 		$code = self::codify($author);
 
-		pre('<span style="color: #00ff00;">' . $code . '</span>');
-		pre('<span style="color: #ff0000;">' . $author . '</span>');
-		pre($authorUrl);
-		pre($title);
-		pre($articleUrl);
-
 		/**
 		 * Scrap Article Directly
 		 */
 		$html = $this->getHtmlFromUrl($this->baseUrl, $articleUrl);
-//		pre($html);
-//		exit;
 
 		/**
 		 * Extract Article Date
@@ -257,7 +249,7 @@ class Scraper
 				$authorUrl = $this->extractHref($article, '.author > a');
 
 				$this->addItem($author, $authorUrl, $title, $articleUrl);
-				break;
+//				break;
 			}
 		}
 
@@ -296,10 +288,6 @@ class Scraper
 	{
 		return (substr($str, strlen($str) - strlen($sub)) === $sub);
 	}
-//    public static function endsWith($haystack, $needle) {
-//        // search forward starting from end minus needle length characters
-//        return $needle === "" || strpos($haystack, $needle, strlen($haystack) - strlen($needle)) !== FALSE;
-//    }
 }
 
 
@@ -326,7 +314,86 @@ function pre($var = false)
 	return;
 }
 
+/**
+ * @param bool $var
+ */
+function prt($var = false)
+{
+	if ($var)
+	{
+		if (is_array($var))
+		{
+			print_r($var);
+			return;
+		}
+		if ($var instanceof \stdClass)
+		{
+			print_r($var);
+			return;
+		}
+		print $var . "\n";
+		return;
+	}
+}
 
-$scraper = new Scraper();
-pre($scraper->scrap('http://archive-grbj-2.s3-website-us-west-1.amazonaws.com/'));
-pre($scraper->getData());
+/**
+ * @param $argv
+ */
+function placeholder($argv)
+{
+	$startDate = false;
+	$endDate   = false;
+
+	foreach ($argv as $item)
+	{
+		if (Scraper::startsWith($item, '--startDate'))
+		{
+			$startDate = explode('=', $item)[1];
+		}
+
+		if (Scraper::startsWith($item, '--endDate'))
+		{
+			$endDate = explode('=', $item)[1];
+		}
+	}
+
+//	prt($startDate);
+	$startTime = strtotime($startDate);
+//	prt(strtotime($startDate));
+
+//	prt($endDate);
+	$endTime = strtotime($endDate);
+//	prt(strtotime($endDate));
+
+	$scraper = new Scraper();
+	$scraper->scrap('http://archive-grbj-2.s3-website-us-west-1.amazonaws.com/');
+	$data = $scraper->getData();
+
+	foreach ($data as $keyAuth => $author)
+	{
+		foreach ($author['articles'] as $keyArt => $article)
+		{
+			$articleTime = strtotime($article['articleDate']);
+//			prt($article['articleDate']);
+//			prt(strtotime($article['articleDate']));
+
+			/**
+			 * Unset Article
+			 */
+			if ($articleTime < $startTime || $articleTime > $endTime)
+			{
+				unset($author['articles'][$keyArt]);
+			}
+		}
+
+		/**
+		 * Unset Author
+		 */
+		if (count($author['articles']) <= 0)
+		{
+			unset($data[$keyAuth]);
+		}
+	}
+
+	return $data;
+}

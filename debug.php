@@ -1,5 +1,4 @@
 <?php
-  require 'src/webscraper.php';
-  $someParam = $argv[1];
-  placeholder($someParam);
-?>
+require __DIR__ . '/src/webscraper.php';
+
+print_r(\CuttingWeb\placeholder($argv));
