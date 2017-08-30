@@ -184,18 +184,18 @@ class Scraper
 				$title = $this->cleanTitle($title[0]);
 
 				/**
-				 * Extract URL
+				 * Extract Article URL
 				 */
-				$url = $this->extractHref($article, '.headline > a');
-				if (strlen(trim($url)) > 1)
+				$articleUrl = $this->extractHref($article, '.headline > a');
+				if (strlen(trim($articleUrl)) > 1)
 				{
-					if (!self::startsWith($url, $baseUrl))
+					if (!self::startsWith($articleUrl, $baseUrl))
 					{
-						$url = $baseUrl . $url;
+						$articleUrl = $baseUrl . $articleUrl;
 					}
 				}
 
-				$this->addItem($author, $title, $url);
+				$this->addItem($author, $title, $articleUrl);
 			}
 
 
