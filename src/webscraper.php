@@ -245,44 +245,11 @@ class Scraper
 				 * Extract Author URL
 				 */
 				$authorUrl = $this->extractHref($article, '.author > a');
-//				if (strlen(trim($authorUrl)) > 1)
-//				{
-//					if (!self::startsWith($authorUrl, $baseUrl))
-//					{
-//						$authorUrl = $baseUrl . $authorUrl;
-//					}
-//				}
 
 				$this->addItem($author, $authorUrl, $title, $articleUrl);
 				break;
 			}
 		}
-
-//		pre($titles);
-
-//		$cats          = $subCatsHTML = array();
-//		$catsFilter    = '.all-depts-links-heading > a';
-//		$subCatsFilter = 'ul';
-
-		/**
-		 *
-		 */
-//		foreach ($articles as $index => $catHTML)
-//		{
-//			$crawler             = new Crawler($catHTML);
-//			$cats[]              = $crawler
-//				->filter($catsFilter)
-//				->text();
-//			$subCatsHTML[$index] = array();
-//			$subCatsHTML[$index] = $crawler
-//				->filter($subCatsFilter)
-//				->each(function (Crawler $node)
-//				{
-//					return $node->html();
-//				});
-//			unset($crawler);
-//
-//		}
 
 		return true;
 	}
