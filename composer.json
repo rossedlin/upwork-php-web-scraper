@@ -1,6 +1,9 @@
 {
   "name": "GRBJ Archive Scraper",
+  "version": "1.0.0",
   "require": {
-    "guzzlehttp/guzzle": "~6.0"
+    "guzzlehttp/guzzle": "~6.0",
+    "symfony/css-selector": "^3.3",
+    "symfony/dom-crawler": "^3.3"
   }
 }
