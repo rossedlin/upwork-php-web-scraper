@@ -21,22 +21,52 @@ class Scraper
 {
 	private $data = [];
 
+	/**
+	 * @param $author
+	 * @param $title
+	 */
 	private function addItem($author, $title)
 	{
-//		if ($this->[$author])
-//
-//		$item =
-//			[
-//				'authorName' => $author,
-//				'articles'   => [
-//					[
-//						'articleUrl'  => 'http://example.com',
-//						'articleDate' => '2001-01-01',
-//					],
-//					[],
-//					[],
-//				],
-//			];
+		$code = self::codify($author);
+
+		pre('<span style="color: #00ff00;">' . $code . '</span>');
+		pre('<span style="color: #ff0000;">' . $author . '</span>');
+		pre($title);
+
+		$article = [
+			'articleTitle' => $title,
+			'articleUrl'   => 'http://example.com',
+			'articleDate'  => '2001-01-01',
+		];
+
+		/**
+		 * Second Article
+		 */
+		if (isset($this->data[$code]))
+		{
+			$this->data[$code]['authorCount']++;
+			$this->data[$code]['articles'][] = $article;
+		}
+
+		/**
+		 * First Article
+		 */
+		else
+		{
+			$this->data[$code] = [
+				'authorName'  => $author,
+				'authorCount' => 1,
+				'articles'    => [$article],
+			];
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getData()
+	{
+		return $this->data;
 	}
 
 	/**
@@ -75,14 +105,13 @@ class Scraper
 	 */
 	private function cleanTitle($str)
 	{
-		return $str;
 		return trim($str);
 	}
 
 	/**
 	 * @return mixed
 	 */
-	public function test1()
+	public function scrap()
 	{
 		$client = new Client([
 			'base_uri' => 'http://archive-grbj-2.s3-website-us-west-1.amazonaws.com/',
@@ -101,7 +130,6 @@ class Scraper
 		 */
 		$articles = $this->filterHtml($html, '.record');
 
-		$titles = [];
 		foreach ($articles as $article)
 		{
 			/**
@@ -117,13 +145,12 @@ class Scraper
 					continue;
 				}
 
-				pre('<span style="color: #ff0000;">' . $author . '</span>');
 
 				/**
 				 * Extract Title
 				 */
 				$title = $this->filterHtml($article, '.headline > a');
-				pre($title);
+				$title = $this->cleanTitle($title[0]);
 
 				$this->addItem($author, $title);
 			}
@@ -140,29 +167,32 @@ class Scraper
 //		$catsFilter    = '.all-depts-links-heading > a';
 //		$subCatsFilter = 'ul';
 
-		exit;
-
 		/**
 		 *
 		 */
-		foreach ($articles as $index => $catHTML)
-		{
-			$crawler             = new Crawler($catHTML);
-			$cats[]              = $crawler
-				->filter($catsFilter)
-				->text();
-			$subCatsHTML[$index] = array();
-			$subCatsHTML[$index] = $crawler
-				->filter($subCatsFilter)
-				->each(function (Crawler $node)
-				{
-					return $node->html();
-				});
-			unset($crawler);
+//		foreach ($articles as $index => $catHTML)
+//		{
+//			$crawler             = new Crawler($catHTML);
+//			$cats[]              = $crawler
+//				->filter($catsFilter)
+//				->text();
+//			$subCatsHTML[$index] = array();
+//			$subCatsHTML[$index] = $crawler
+//				->filter($subCatsFilter)
+//				->each(function (Crawler $node)
+//				{
+//					return $node->html();
+//				});
+//			unset($crawler);
+//
+//		}
 
-		}
+		return true;
+	}
 
-		return $body->getContents();
+	public static function codify($str)
+	{
+		return strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', $str), '-'));
 	}
 }
 
@@ -192,4 +222,5 @@ function pre($var = false)
 
 
 $scraper = new Scraper();
-pre($scraper->test1());
+pre($scraper->scrap());
+pre($scraper->getData());
