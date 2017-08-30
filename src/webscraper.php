@@ -24,14 +24,16 @@ class Scraper
 	/**
 	 * @param $author
 	 * @param $title
+	 * @param $url
 	 */
-	private function addItem($author, $title)
+	private function addItem($author, $title, $url)
 	{
 		$code = self::codify($author);
 
 		pre('<span style="color: #00ff00;">' . $code . '</span>');
 		pre('<span style="color: #ff0000;">' . $author . '</span>');
 		pre($title);
+		pre($url);
 
 		$article = [
 			'articleTitle' => $title,
@@ -75,7 +77,7 @@ class Scraper
 	 *
 	 * @return array
 	 */
-	private function filterHtml($html, $filter)
+	private function extractHtml($html, $filter)
 	{
 		$crawler  = new Crawler($html);
 		$articles = $crawler
@@ -86,6 +88,26 @@ class Scraper
 			});
 
 		return $articles;
+	}
+
+	/**
+	 * @param $html
+	 * @param $filter
+	 *
+	 * @return array
+	 */
+	private function extractHref($html, $filter)
+	{
+		try
+		{
+			$crawler = new Crawler($html);
+			$link    = $crawler->filter('a')->attr('href');
+			return $link;
+		}
+		catch (\Exception $e)
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -126,16 +148,18 @@ class Scraper
 	}
 
 	/**
-	 * @return mixed
+	 * @param $baseUrl
+	 *
+	 * @return bool
 	 */
-	public function scrap()
+	public function scrap($baseUrl)
 	{
-		$html = $this->getHtmlFromUrl('http://archive-grbj-2.s3-website-us-west-1.amazonaws.com/');
+		$html = $this->getHtmlFromUrl($baseUrl);
 
 		/**
 		 *
 		 */
-		$articles = $this->filterHtml($html, '.record');
+		$articles = $this->extractHtml($html, '.record');
 
 		foreach ($articles as $article)
 		{
@@ -143,7 +167,7 @@ class Scraper
 			 * Extract Author
 			 * Only take articles with an author
 			 */
-			$author = $this->filterHtml($article, '.author > a');
+			$author = $this->extractHtml($article, '.author > a');
 			if (isset($author[0]))
 			{
 				$author = $this->cleanAuthor($author[0]);
@@ -156,14 +180,22 @@ class Scraper
 				/**
 				 * Extract Title
 				 */
-				$title = $this->filterHtml($article, '.headline > a');
+				$title = $this->extractHtml($article, '.headline > a');
 				$title = $this->cleanTitle($title[0]);
 
 				/**
 				 * Extract URL
 				 */
+				$url = $this->extractHref($article, '.headline > a');
+				if (strlen(trim($url)) > 1)
+				{
+					if (!self::startsWith($url, $baseUrl))
+					{
+						$url = $baseUrl . $url;
+					}
+				}
 
-//				$this->addItem($author, $title);
+				$this->addItem($author, $title, $url);
 			}
 
 
@@ -201,10 +233,42 @@ class Scraper
 		return true;
 	}
 
+	/**
+	 * @param $str
+	 *
+	 * @return string
+	 */
 	public static function codify($str)
 	{
 		return strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', $str), '-'));
 	}
+
+	/**
+	 * @param $haystack
+	 * @param $needle
+	 *
+	 * @return bool
+	 */
+	public static function startsWith($haystack, $needle)
+	{
+		// search backwards starting from haystack length characters from the end
+		return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
+	}
+
+	/**
+	 * @param $str
+	 * @param $sub
+	 *
+	 * @return bool
+	 */
+	public static function endsWith($str, $sub)
+	{
+		return (substr($str, strlen($str) - strlen($sub)) === $sub);
+	}
+//    public static function endsWith($haystack, $needle) {
+//        // search forward starting from end minus needle length characters
+//        return $needle === "" || strpos($haystack, $needle, strlen($haystack) - strlen($needle)) !== FALSE;
+//    }
 }
 
 
@@ -233,5 +297,5 @@ function pre($var = false)
 
 
 $scraper = new Scraper();
-pre($scraper->scrap());
+pre($scraper->scrap('http://archive-grbj-2.s3-website-us-west-1.amazonaws.com/'));
 pre($scraper->getData());
