@@ -249,7 +249,6 @@ class Scraper
 				$authorUrl = $this->extractHref($article, '.author > a');
 
 				$this->addItem($author, $authorUrl, $title, $articleUrl);
-//				break;
 			}
 		}
 
@@ -338,6 +337,8 @@ function prt($var = false)
 
 /**
  * @param $argv
+ *
+ * @return array
  */
 function placeholder($argv)
 {
@@ -362,6 +363,9 @@ function placeholder($argv)
 			$maxResultsPerAuthor = (int)explode('=', $item)[1];
 		}
 	}
+
+//	pre($maxResultsPerAuthor);
+//	exit;
 
 //	prt($startDate);
 	$startTime = strtotime($startDate);
