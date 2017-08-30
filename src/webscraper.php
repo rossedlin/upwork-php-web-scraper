@@ -108,13 +108,10 @@ class Scraper
 		return trim($str);
 	}
 
-	/**
-	 * @return mixed
-	 */
-	public function scrap()
+	private function getHtmlFromUrl($url)
 	{
 		$client = new Client([
-			'base_uri' => 'http://archive-grbj-2.s3-website-us-west-1.amazonaws.com/',
+			'base_uri' => $url,
 			'timeout'  => 5.0,
 		]);
 
@@ -124,6 +121,16 @@ class Scraper
 		$response = $client->request('GET', '/');
 		$body     = $response->getBody();
 		$html     = $body->getContents();
+
+		return $html;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function scrap()
+	{
+		$html = $this->getHtmlFromUrl('http://archive-grbj-2.s3-website-us-west-1.amazonaws.com/');
 
 		/**
 		 *
@@ -152,7 +159,11 @@ class Scraper
 				$title = $this->filterHtml($article, '.headline > a');
 				$title = $this->cleanTitle($title[0]);
 
-				$this->addItem($author, $title);
+				/**
+				 * Extract URL
+				 */
+
+//				$this->addItem($author, $title);
 			}
 
 
