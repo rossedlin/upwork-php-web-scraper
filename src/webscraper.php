@@ -341,8 +341,9 @@ function prt($var = false)
  */
 function placeholder($argv)
 {
-	$startDate = false;
-	$endDate   = false;
+	$startDate           = false;
+	$endDate             = false;
+	$maxResultsPerAuthor = 0;
 
 	foreach ($argv as $item)
 	{
@@ -354,6 +355,11 @@ function placeholder($argv)
 		if (Scraper::startsWith($item, '--endDate'))
 		{
 			$endDate = explode('=', $item)[1];
+		}
+
+		if (Scraper::startsWith($item, '--maxResultsPerAuthor'))
+		{
+			$maxResultsPerAuthor = (int)explode('=', $item)[1];
 		}
 	}
 
@@ -369,7 +375,7 @@ function placeholder($argv)
 	$scraper->scrap('http://archive-grbj-2.s3-website-us-west-1.amazonaws.com/');
 	$data = $scraper->getData();
 
-	foreach ($data as $keyAuth => $author)
+	foreach ($data as $keyAuth => &$author)
 	{
 		foreach ($author['articles'] as $keyArt => $article)
 		{
@@ -383,6 +389,17 @@ function placeholder($argv)
 			if ($articleTime < $startTime || $articleTime > $endTime)
 			{
 				unset($author['articles'][$keyArt]);
+			}
+		}
+
+		/**
+		 * Max results, if greater than zero
+		 */
+		if ($maxResultsPerAuthor > 0)
+		{
+			if (count($author['articles']) > $maxResultsPerAuthor)
+			{
+				$author['articles'] = array_slice($author['articles'], 0, $maxResultsPerAuthor);
 			}
 		}
 
