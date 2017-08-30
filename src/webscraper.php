@@ -110,15 +110,22 @@ class Scraper
 	 */
 	private function extractHtml($html, $filter)
 	{
-		$crawler  = new Crawler($html);
-		$articles = $crawler
-			->filter($filter)
-			->each(function (Crawler $node)
-			{
-				return $node->html();
-			});
+		try
+		{
+			$crawler  = new Crawler($html);
+			$articles = $crawler
+				->filter($filter)
+				->each(function (Crawler $node)
+				{
+					return $node->html();
+				});
 
-		return $articles;
+			return $articles;
+		}
+		catch (\Exception $e)
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -213,7 +220,14 @@ class Scraper
 				 * Extract Title
 				 */
 				$title = $this->extractHtml($article, '.headline > a');
-				$title = $this->cleanTitle($title[0]);
+				if (isset($title[0]))
+				{
+					$title = $this->cleanTitle($title[0]);
+				}
+				else
+				{
+					$title = '';
+				}
 
 				/**
 				 * Extract Article URL
